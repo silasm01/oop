@@ -1,10 +1,6 @@
 use std::io::stdout;
 
-use crossterm::{
-    execute,
-    cursor::MoveTo,
-    terminal::size,
-};
+use crossterm::{cursor::MoveTo, execute, terminal::size};
 
 #[derive(Debug)]
 pub enum Object {
@@ -14,28 +10,25 @@ pub enum Object {
 
 #[derive(Debug)]
 pub struct Tui {
-    // objects: Vec<Object>,
-    text: Vec<Text>,
-    button: Vec<Button>,
+    objects: Vec<Object>,
 }
 
 impl Tui {
     pub fn new() -> Tui {
-        Tui { text: vec![], button: vec![] }
+        Tui { objects: vec![] }
     }
 
     pub fn add_obj(&mut self, object: Object) {
-        // self.objects.push(object)
-        match object {
-            crate::tui::Object::Text(t) => self.text.push(t),
-            crate::tui::Object::Button(b) => self.button.push(b),
-        }
+        self.objects.push(object)
     }
 
     pub fn display(&self) {
         print!("\x1B[2J\x1B[1;1H");
-        self.text.iter().for_each(|x| x.display(x));
-        self.button.iter().for_each(|x| x.display());
+
+        self.objects.iter().for_each(|x| match x {
+            Object::Text(t) => t.display(),
+            Object::Button(b) => b.display(),
+        })
     }
 }
 
@@ -48,13 +41,13 @@ pub enum PosTypes {
 #[derive(Debug)]
 pub enum VerticalAlignment {
     Left(PosTypes),
-    Right(PosTypes)
+    Right(PosTypes),
 }
 
 #[derive(Debug)]
 pub enum HorizontalAlignment {
     Top(PosTypes),
-    Bottom(PosTypes)
+    Bottom(PosTypes),
 }
 
 #[derive(Debug)]
@@ -64,15 +57,18 @@ pub struct Text {
     y: u16,
 }
 
-
 impl Text {
     pub fn new(input: String, x: u16, y: u16) -> Text {
-        Text { string: input, x, y }
+        Text {
+            string: input,
+            x,
+            y,
+        }
     }
 
-    pub fn display(&self, obj: &Text) {
+    pub fn display(&self) {
         execute!(stdout(), MoveTo(self.x, self.y)).unwrap();
-        println!("{}", obj.string)
+        println!("{}", self.string)
     }
 }
 
@@ -84,33 +80,45 @@ pub struct Button {
 }
 
 impl Button {
-    pub fn new(input: String, vertical_alignment: VerticalAlignment, horizontal_alignment: HorizontalAlignment) -> Button {
-        Button { string: input, vertical_alignment, horizontal_alignment }
+    pub fn new(
+        input: String,
+        vertical_alignment: VerticalAlignment,
+        horizontal_alignment: HorizontalAlignment,
+    ) -> Button {
+        Button {
+            string: input,
+            vertical_alignment,
+            horizontal_alignment,
+        }
     }
 
     pub fn display(&self) {
         //println!("{}", obj.string)
         let vertalignment = match &self.vertical_alignment {
             VerticalAlignment::Left(u) => (u, 0),
-            VerticalAlignment::Right(u) => (u, size().unwrap().0 as i16*-1),
+            VerticalAlignment::Right(u) => (u, size().unwrap().0 as i16 * -1),
         };
 
         let verticalpostype: i16 = match vertalignment.0 {
-            PosTypes::Pixel(u) => (vertalignment.1+u).abs(),
+            PosTypes::Pixel(u) => (vertalignment.1 + u).abs(),
             PosTypes::Percent(u) => size().unwrap().0 as i16 * *u / 100,
         };
 
         let horalignment = match &self.horizontal_alignment {
             HorizontalAlignment::Top(u) => (u, 0),
-            HorizontalAlignment::Bottom(u) => (u, size().unwrap().1 as i16*-1),
+            HorizontalAlignment::Bottom(u) => (u, size().unwrap().1 as i16 * -1),
         };
 
         let horticalpostype: i16 = match horalignment.0 {
-            PosTypes::Pixel(u) => (horalignment.1+u).abs(),
+            PosTypes::Pixel(u) => (horalignment.1 + u).abs(),
             PosTypes::Percent(u) => size().unwrap().1 as i16 * *u / 100,
         };
 
-        execute!(stdout(), MoveTo(verticalpostype as u16, horticalpostype as u16)).unwrap();
+        execute!(
+            stdout(),
+            MoveTo(verticalpostype as u16, horticalpostype as u16)
+        )
+        .unwrap();
 
         println!("{:?}, {:?}", verticalpostype as u16, size())
     }
