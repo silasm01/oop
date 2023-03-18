@@ -14,6 +14,7 @@ pub enum Object {
 
 #[derive(Debug)]
 pub struct Tui {
+    // objects: Vec<Object>,
     text: Vec<Text>,
     button: Vec<Button>,
 }
@@ -24,6 +25,7 @@ impl Tui {
     }
 
     pub fn add_obj(&mut self, object: Object) {
+        // self.objects.push(object)
         match object {
             crate::tui::Object::Text(t) => self.text.push(t),
             crate::tui::Object::Button(b) => self.button.push(b),
@@ -95,7 +97,7 @@ impl Button {
 
         let verticalpostype: i16 = match vertalignment.0 {
             PosTypes::Pixel(u) => (vertalignment.1+u).abs(),
-            PosTypes::Percent(u) => *u,
+            PosTypes::Percent(u) => size().unwrap().0 as i16 * *u / 100,
         };
 
         let horalignment = match &self.horizontal_alignment {
@@ -105,11 +107,11 @@ impl Button {
 
         let horticalpostype: i16 = match horalignment.0 {
             PosTypes::Pixel(u) => (horalignment.1+u).abs(),
-            PosTypes::Percent(u) => *u,
+            PosTypes::Percent(u) => size().unwrap().1 as i16 * *u / 100,
         };
 
         execute!(stdout(), MoveTo(verticalpostype as u16, horticalpostype as u16)).unwrap();
 
-        println!("{}", self.string)
+        println!("{:?}, {:?}", verticalpostype as u16, size())
     }
 }
