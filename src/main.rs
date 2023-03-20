@@ -1,7 +1,6 @@
 use std::{time::Duration, thread};
 
-use crossterm::terminal::size;
-use tui::{Tui, Text, Button, VerticalAlignment::*, HorizontalAlignment::*, PosTypes::*};
+use tui::{Tui, text::*, button::*, VerticalAlignment::*, HorizontalAlignment::*, PosTypes::*};
 
 mod tui;
 
@@ -12,16 +11,11 @@ fn main() {
     tui.display();
     thread::sleep(Duration::from_millis(1000));
     tui.add_obj(tui::Object::Text(Text::new("Hello2".to_string(), 10, 10)));
-    tui.add_obj(tui::Object::Button(Button::new("hello3".to_string(), Left(Percent(25)) , Top(Pixel(10)))));
-    tui.add_obj(tui::Object::Button(Button::new("test".to_string(), Right(Pixel(25)), Bottom(Percent(75)))));
+    tui.add_obj(tui::Object::Buttonobj(Button::new("hello3".to_string(), Left(Percent(25)) , Top(Pixel(10)), false)));
+    tui.add_obj(tui::Object::Buttonobj(Button::new("test".to_string(), Left(Pixel(25)), Bottom(Percent(75)), true)));
     tui.display();
 
-    let mut old_size = size();
     loop {
-        thread::sleep(Duration::from_millis(10));
-        if size().unwrap() != old_size.unwrap() {
-            tui.display();
-        }
-        old_size = size();
+        tui.reload_tui()
     }
 }

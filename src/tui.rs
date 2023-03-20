@@ -2,24 +2,58 @@ use std::io::stdout;
 
 use crossterm::{cursor::MoveTo, execute, terminal::size};
 
+use button::*;
+pub(crate) mod button;
+
+use text::*;
+pub(crate) mod text;
+
 #[derive(Debug)]
 pub enum Object {
     Text(Text),
-    Button(Button),
+    Buttonobj(Button),
 }
 
 #[derive(Debug)]
 pub struct Tui {
     objects: Vec<Object>,
+    terminal_size: Result<(u16, u16), std::io::Error>,
+    total_weighted: i16,
 }
 
 impl Tui {
     pub fn new() -> Tui {
-        Tui { objects: vec![] }
+        Tui {
+            objects: vec![],
+            terminal_size: size(),
+            total_weighted: 0,
+        }
     }
 
     pub fn add_obj(&mut self, object: Object) {
         self.objects.push(object)
+    }
+
+    pub fn reload_tui(&mut self) {
+        if size().unwrap() != *self.terminal_size.as_ref().unwrap() {
+            self.display();
+            self.terminal_size = size();
+        }
+
+        self.total_weighted = 0;
+        self.objects.iter().for_each(|x| match x {
+            Object::Text(_) => (),
+            Object::Buttonobj(b) => match &b.vertical_alignment {
+                VerticalAlignment::Left(x) => match x {
+                    PosTypes::Pixel(p) => self.total_weighted += p,
+                    PosTypes::Percent(p) => self.total_weighted += p * size().unwrap().0 as i16 / 100,
+                    PosTypes::Weighted(_) => (),
+                },
+                VerticalAlignment::Right(_) => (),
+            },
+        });
+
+        //println!("total_weighted = {:?}, {:?}", &self.total_weighted, size().unwrap().0)
     }
 
     pub fn display(&self) {
@@ -27,7 +61,7 @@ impl Tui {
 
         self.objects.iter().for_each(|x| match x {
             Object::Text(t) => t.display(),
-            Object::Button(b) => b.display(),
+            Object::Buttonobj(b) => b.display(),
         })
     }
 }
@@ -36,6 +70,7 @@ impl Tui {
 pub enum PosTypes {
     Pixel(i16),
     Percent(i16),
+    Weighted(i16),
 }
 
 #[derive(Debug)]
@@ -50,76 +85,9 @@ pub enum HorizontalAlignment {
     Bottom(PosTypes),
 }
 
-#[derive(Debug)]
-pub struct Text {
-    string: String,
-    x: u16,
-    y: u16,
-}
 
-impl Text {
-    pub fn new(input: String, x: u16, y: u16) -> Text {
-        Text {
-            string: input,
-            x,
-            y,
-        }
-    }
-
-    pub fn display(&self) {
-        execute!(stdout(), MoveTo(self.x, self.y)).unwrap();
-        println!("{}", self.string)
-    }
-}
-
-#[derive(Debug)]
-pub struct Button {
-    string: String,
-    vertical_alignment: VerticalAlignment,
-    horizontal_alignment: HorizontalAlignment,
-}
-
-impl Button {
-    pub fn new(
-        input: String,
-        vertical_alignment: VerticalAlignment,
-        horizontal_alignment: HorizontalAlignment,
-    ) -> Button {
-        Button {
-            string: input,
-            vertical_alignment,
-            horizontal_alignment,
-        }
-    }
-
-    pub fn display(&self) {
-        //println!("{}", obj.string)
-        let vertalignment = match &self.vertical_alignment {
-            VerticalAlignment::Left(u) => (u, 0),
-            VerticalAlignment::Right(u) => (u, size().unwrap().0 as i16 * -1),
-        };
-
-        let verticalpostype: i16 = match vertalignment.0 {
-            PosTypes::Pixel(u) => (vertalignment.1 + u).abs(),
-            PosTypes::Percent(u) => size().unwrap().0 as i16 * *u / 100,
-        };
-
-        let horalignment = match &self.horizontal_alignment {
-            HorizontalAlignment::Top(u) => (u, 0),
-            HorizontalAlignment::Bottom(u) => (u, size().unwrap().1 as i16 * -1),
-        };
-
-        let horticalpostype: i16 = match horalignment.0 {
-            PosTypes::Pixel(u) => (horalignment.1 + u).abs(),
-            PosTypes::Percent(u) => size().unwrap().1 as i16 * *u / 100,
-        };
-
-        execute!(
-            stdout(),
-            MoveTo(verticalpostype as u16, horticalpostype as u16)
-        )
-        .unwrap();
-
-        println!("{:?}, {:?}", verticalpostype as u16, size())
+trait Objecttrait {
+    fn border(&self) {
+        
     }
 }
