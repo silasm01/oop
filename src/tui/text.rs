@@ -4,7 +4,7 @@ use crossterm::{execute, cursor::MoveTo};
 
 use super::PosTypes;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Text {
     string: String,
     x: u16,

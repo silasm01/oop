@@ -1,7 +1,7 @@
 use crate::tui::*;
 use std::fmt::Debug;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Button {
     tui: Tui,
     string: String,
@@ -35,11 +35,11 @@ impl Button {
     fn border(&self, vertical_alignment: u16, horizontal_alignment: u16) {}
 
     pub fn display(&self) {
-        // execute!(
-        //     stdout(),
-        //     MoveTo(self.horizontal_alignment.get_type() as u16, self.vertical_alignment.get_type() as u16)
-        // )
-        // .unwrap();
+        execute!(
+            stdout(),
+            MoveTo(self.horizontal_alignment.get_type(&self) as u16, self.vertical_alignment.get_type(&self) as u16)
+        )
+        .unwrap();
         println!("{:?}", self)
     }
 }

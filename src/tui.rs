@@ -8,13 +8,13 @@ pub(crate) mod button;
 use text::*;
 pub(crate) mod text;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Object {
     Text(Text),
     Buttonobj(Button),
 }
 
-#[derive(Debug, Copy)]
+#[derive(Debug, Clone)]
 pub struct Tui {
     objects: Vec<Object>,
     terminal_size: (u16, u16),
@@ -35,9 +35,9 @@ impl Tui {
     }
 
     pub fn reload_tui(&mut self) {
-        if size().unwrap() != *self.terminal_size.as_ref().unwrap() {
+        if size().unwrap() != self.terminal_size {
             self.display();
-            self.terminal_size = size();
+            self.terminal_size = size().unwrap();
         }
     }
 
@@ -51,17 +51,21 @@ impl Tui {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Alignment {
     LeftTop(),
     RightBottom(),
 }
 
 impl Alignment {
-    pub fn get_type(&self, window_size: i16) -> i16{
+    pub fn get_type(&self, obj: &Object) -> i16{
+        let i = match obj {
+            Object::Text(_) => todo!(),
+            Object::Buttonobj(_) => todo!(),
+        };
         let out = match self {
             Alignment::LeftTop() => 0,
-            Alignment::RightBottom() => todo!(),
+            Alignment::RightBottom() => 0,
         };
         out
     }
@@ -70,7 +74,7 @@ impl Alignment {
 trait Objecttrait<Object> {
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum PosTypes {
     Pixel(i16),
     Percent(i16),
