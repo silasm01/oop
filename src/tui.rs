@@ -1,4 +1,4 @@
-use std::io::stdout;
+use std::{io::stdout};
 
 use crossterm::{cursor::MoveTo, execute, terminal::size};
 
@@ -14,10 +14,10 @@ pub enum Object {
     Buttonobj(Button),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy)]
 pub struct Tui {
     objects: Vec<Object>,
-    terminal_size: Result<(u16, u16), std::io::Error>,
+    terminal_size: (u16, u16),
     total_weighted: i16,
 }
 
@@ -25,7 +25,7 @@ impl Tui {
     pub fn new() -> Tui {
         Tui {
             objects: vec![],
-            terminal_size: size(),
+            terminal_size: size().unwrap(),
             total_weighted: 0,
         }
     }
@@ -39,21 +39,6 @@ impl Tui {
             self.display();
             self.terminal_size = size();
         }
-
-        // self.total_weighted = 0;
-        // self.objects.iter().for_each(|x| match x {
-        //     Object::Text(_) => (),O
-        //     Object::Buttonobj(b) => match &b.vertical_alignment {
-        //         VerticalAlignment::Left(x) => match x {
-        //             PosTypes::Pixel(p) => self.total_weighted += p,
-        //             PosTypes::Percent(p) => self.total_weighted += p * size().unwrap().0 as i16 / 100,
-        //             PosTypes::Weighted(_) => (),
-        //         },
-        //         VerticalAlignment::Right(_) => (),
-        //     },
-        // });
-
-        //println!("total_weighted = {:?}, {:?}", &self.total_weighted, size().unwrap().0)
     }
 
     pub fn display(&self) {
@@ -67,33 +52,38 @@ impl Tui {
 }
 
 #[derive(Debug)]
+pub enum Alignment {
+    LeftTop(),
+    RightBottom(),
+}
+
+impl Alignment {
+    pub fn get_type(&self, window_size: i16) -> i16{
+        let out = match self {
+            Alignment::LeftTop() => 0,
+            Alignment::RightBottom() => todo!(),
+        };
+        out
+    }
+}
+
+trait Objecttrait<Object> {
+}
+
+#[derive(Debug)]
 pub enum PosTypes {
     Pixel(i16),
     Percent(i16),
     Weighted(i16),
 }
 
-#[derive(Debug)]
-pub enum VerticalAlignment {
-    Left(),
-    Right(),
-}
-
-#[derive(Debug)]
-pub enum HorizontalAlignment {
-    Top(),
-    Bottom(),
-}
-
-
-trait Objecttrait<Object> {
-}
-
-pub fn getPosTypeValue(postype: &PosTypes) -> i16 {
-    let out = match *postype {
-        PosTypes::Pixel(o) => o,
-        PosTypes::Percent(_) => 0,
-        PosTypes::Weighted(_) => 0,
-    };
-    return out;
+impl PosTypes {
+    pub fn get_type(&self, window_size: i16) -> i16 {
+        let out = match *self {
+            PosTypes::Pixel(o) => o,
+            PosTypes::Percent(o) => window_size/o,
+            PosTypes::Weighted(_) => 0,
+        };
+        return out;
+    }
 }
