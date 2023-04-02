@@ -11,7 +11,7 @@ pub struct Button {
     border: bool,
 }
 
-impl Objecttrait<Object> for Button {}
+impl Objecttrait for Button {}
 
 impl Button {
     pub fn new(
@@ -23,7 +23,7 @@ impl Button {
         border: bool,
     ) -> Button {
         Button {
-            tui: tui,
+            tui,
             string: input,
             vertical_alignment,
             horizontal_alignment,
@@ -37,9 +37,9 @@ impl Button {
     pub fn display(&self) {
         execute!(
             stdout(),
-            MoveTo(self.horizontal_alignment.get_type(&self) as u16, self.vertical_alignment.get_type(&self) as u16)
+            MoveTo(self.horizontal_alignment.get_type(&self.size).0 as u16, self.vertical_alignment.get_type(&self.size).1 as u16)
         )
         .unwrap();
-        println!("{:?}", self)
+        println!("{:?}", self.tui.objects)
     }
 }

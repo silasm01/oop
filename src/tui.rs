@@ -58,20 +58,26 @@ pub enum Alignment {
 }
 
 impl Alignment {
-    pub fn get_type(&self, obj: &Object) -> i16{
-        let i = match obj {
-            Object::Text(_) => todo!(),
-            Object::Buttonobj(_) => todo!(),
+    pub fn get_type(&self, size: &Vec<PosTypes>) -> (i16, i16){
+        let x_size = match size[0] {
+            PosTypes::Pixel(o) => o,
+            PosTypes::Percent(_) => todo!(),
+            PosTypes::Weighted(_) => todo!(),
+        };
+        let y_size = match size[1] {
+            PosTypes::Pixel(o) => o,
+            PosTypes::Percent(_) => todo!(),
+            PosTypes::Weighted(_) => todo!(),
         };
         let out = match self {
-            Alignment::LeftTop() => 0,
-            Alignment::RightBottom() => 0,
+            Alignment::LeftTop() => (0,0),
+            Alignment::RightBottom() => (x_size, y_size),
         };
         out
     }
 }
 
-trait Objecttrait<Object> {
+trait Objecttrait {
 }
 
 #[derive(Debug, Clone)]
